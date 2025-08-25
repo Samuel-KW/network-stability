@@ -1,0 +1,38 @@
+services:
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2
+    restart: unless-stopped
+    ports:
+      - ${INFLUX_PORT}:8086
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASS}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_TOKEN}
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-data:/etc/influxdb2
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:main-ubuntu
+    restart: unless-stopped
+    ports:
+      - ${GRAFANA_PORT}:3000
+    volumes:
+      - ./datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASS}
+      - INFLUX_HOST=http://influxdb:${INFLUX_PORT}
+      - INFLUX_ORG=${INFLUX_ORG}
+      - INFLUX_BUCKET=${INFLUX_BUCKET}
+      - INFLUX_TOKEN=${INFLUX_TOKEN}
+
+volumes:
+  influxdb-data:
+  grafana-data:
